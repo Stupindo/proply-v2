@@ -1,0 +1,6 @@
+@Proply.Bootstrapper_HostAddress = http://localhost:5200
+
+GET {{Proply.Bootstrapper_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
