@@ -3,6 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
 
 var keyVaultUri = builder.Configuration["KeyVaultUri"];
 if (!string.IsNullOrEmpty(keyVaultUri))
@@ -26,12 +27,40 @@ builder.Services.AddSingleton<Microsoft.Azure.Cosmos.CosmosClient>(sp =>
     return new Microsoft.Azure.Cosmos.CosmosClient(endpoint, new Azure.Identity.DefaultAzureCredential());
 });
 
+// Configure Azure OpenAI
+builder.Services.AddSingleton<OpenAI.Chat.ChatClient>(sp =>
+{
+    var openAiSection = builder.Configuration.GetSection("AzureOpenAi");
+    var endpoint = openAiSection["Endpoint"];
+    var deployment = openAiSection["DeploymentName"];
+
+    if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(deployment))
+    {
+        return null;
+    }
+
+    // AzureOpenAIClient requires Azure.AI.OpenAI package
+    var client = new Azure.AI.OpenAI.AzureOpenAIClient(new Uri(endpoint), new Azure.Identity.DefaultAzureCredential());
+    return client.GetChatClient(deployment);
+});
+
+// Register Module Services
+builder.Services.AddScoped<Proply.Modules.Notes.Services.INoteProcessor, Proply.Modules.Notes.Services.OpenAiNoteProcessor>();
+
+// Register Repositories
+builder.Services.AddScoped<Proply.Shared.Kernel.Data.IRepository<Proply.Modules.Notes.Domain.VoiceNote>>(sp =>
+{
+    var client = sp.GetRequiredService<Microsoft.Azure.Cosmos.CosmosClient>();
+    return new Proply.Shared.Kernel.Data.CosmosRepository<Proply.Modules.Notes.Domain.VoiceNote>(client, "ProplyDb", "Notes");
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapControllers(); // Enable controllers
 }
 
 app.UseHttpsRedirection();
