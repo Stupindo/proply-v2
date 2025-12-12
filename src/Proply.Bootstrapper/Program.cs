@@ -4,6 +4,28 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+var keyVaultUri = builder.Configuration["KeyVaultUri"];
+if (!string.IsNullOrEmpty(keyVaultUri))
+{
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new Azure.Identity.DefaultAzureCredential());
+}
+
+// Register Cosmos Client
+builder.Services.AddSingleton<Microsoft.Azure.Cosmos.CosmosClient>(sp =>
+{
+    var cosmosSection = builder.Configuration.GetSection("CosmosDb");
+    var endpoint = cosmosSection["AccountEndpoint"];
+    if (string.IsNullOrEmpty(endpoint))
+    {
+        // Fallback or throw? For now let's minimal handling
+        return null; 
+    }
+    
+    // Use DefaultAzureCredential which is already added for KeyVault.
+    // CosmosClient supports TokenCredential.
+    return new Microsoft.Azure.Cosmos.CosmosClient(endpoint, new Azure.Identity.DefaultAzureCredential());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
