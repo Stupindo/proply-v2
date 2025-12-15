@@ -1,4 +1,5 @@
 using Azure.Identity;
+using Azure.Core;
 using OpenAI.Chat;
 using Proply.Modules.Notes.Services;
 
@@ -28,8 +29,15 @@ public class OpenAiNoteProcessorTests : TestBase
             Assert.False(string.IsNullOrEmpty(endpoint), "AzureOpenAi:Endpoint is missing in configuration.");
             Assert.False(string.IsNullOrEmpty(deployment), "AzureOpenAi:DeploymentName is missing in configuration.");
 
-            // Use DefaultAzureCredential
-            var credential = new DefaultAzureCredential();
+            // Use AzureCliCredential to enforce usage of the logged-in CLI user
+            var credential = new AzureCliCredential();
+            
+            // Verify we can get a token first
+            _output.WriteLine("Attempting to acquire token for https://cognitiveservices.azure.com/.default ...");
+            var tokenContext = new TokenRequestContext(new[] { "https://cognitiveservices.azure.com/.default" });
+            var token = await credential.GetTokenAsync(tokenContext);
+            _output.WriteLine($"Token acquired successfully. Expires: {token.ExpiresOn}");
+
             var azureClient = new Azure.AI.OpenAI.AzureOpenAIClient(new Uri(endpoint), credential);
             ChatClient chatClient = azureClient.GetChatClient(deployment);
 
