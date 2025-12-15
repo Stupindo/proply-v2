@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proply.Modules.Notes", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proply.Modules.Users", "src\Modules\Proply.Modules.Users\Proply.Modules.Users.csproj", "{20D1C618-E14B-4F80-9308-ACD492FEF26B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proply.IntegrationTests", "tests\Proply.IntegrationTests\Proply.IntegrationTests.csproj", "{D3A42A37-1162-4413-9C40-C0E450FB997D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +75,18 @@ Global
 		{20D1C618-E14B-4F80-9308-ACD492FEF26B}.Release|x64.Build.0 = Release|Any CPU
 		{20D1C618-E14B-4F80-9308-ACD492FEF26B}.Release|x86.ActiveCfg = Release|Any CPU
 		{20D1C618-E14B-4F80-9308-ACD492FEF26B}.Release|x86.Build.0 = Release|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Debug|x64.Build.0 = Debug|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Debug|x86.Build.0 = Debug|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Release|x64.ActiveCfg = Release|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Release|x64.Build.0 = Release|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Release|x86.ActiveCfg = Release|Any CPU
+		{D3A42A37-1162-4413-9C40-C0E450FB997D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,5 +96,6 @@ Global
 		{1315BEFE-50F6-4523-B931-40E6774DD7FC} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{E91F3190-806D-4C72-BE16-F91999C7FABC} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{20D1C618-E14B-4F80-9308-ACD492FEF26B} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{D3A42A37-1162-4413-9C40-C0E450FB997D} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal
