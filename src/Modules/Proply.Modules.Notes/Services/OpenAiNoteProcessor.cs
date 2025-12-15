@@ -17,27 +17,42 @@ public class OpenAiNoteProcessor : INoteProcessor
 
     public async Task<StructuredNote> ProcessNoteAsync(string rawContent)
     {
+        // Define the JSON schema for StructuredNote
+        var jsonSchema = BinaryData.FromObjectAsJson(new
+        {
+            type = "object",
+            properties = new
+            {
+                summary = new { type = "string" },
+                category = new { type = "string", @enum = new[] { "Personal", "Work", "Ideas", "Reminders" } },
+                tags = new { type = "array", items = new { type = "string" } },
+                actionItems = new { type = "array", items = new { type = "string" } }
+            },
+            required = new[] { "summary", "category", "tags", "actionItems" },
+            additionalProperties = false
+        });
+
+        var options = new ChatCompletionOptions
+        {
+            ResponseFormat = ChatResponseFormat.CreateJsonSchemaFormat(
+                "structured_note",
+                jsonSchema: jsonSchema,
+                jsonSchemaIsStrict: true)
+        };
+
         var messages = new List<ChatMessage>
         {
-            new SystemChatMessage("You are a helpful assistant that processes raw voice notes into structured JSON. You must return ONLY valid JSON matching the following structure: { \"summary\": \"string\", \"category\": \"Personal|Work|Ideas|Reminders\", \"tags\": [\"string\"], \"actionItems\": [\"string\"] }."),
+            new SystemChatMessage("You are a helpful assistant that processes raw voice notes."),
             new UserChatMessage(rawContent)
         };
 
-        ChatCompletion completion = await _chatClient.CompleteChatAsync(messages);
+        ChatCompletion completion = await _chatClient.CompleteChatAsync(messages, options);
 
+        // The model is guaranteed to return valid JSON matching the schema
         string jsonResponse = completion.Content[0].Text;
-        
-        // Basic cleanup if the model includes markdown code blocks
-        if (jsonResponse.StartsWith("```json"))
-        {
-            jsonResponse = jsonResponse.Replace("```json", "").Replace("```", "").Trim();
-        }
 
-        // Deserialize using System.Text.Json (or Newtonsoft if preferred, but local logic here is fine with STJ or Newtonsoft)
-        // Since we are inside the module and not persisting to Cosmos here, either is fine. 
-        // Let's use System.Text.Json for simplicity as it is built-in, 
-        // unless we want to be consistent with the rest of the app using Newtonsoft.
-        // Let's use Newtonsoft to match the Domain definition attributes.
-        return Newtonsoft.Json.JsonConvert.DeserializeObject<StructuredNote>(jsonResponse);
+        // Deserialize using System.Text.Json
+        var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        return JsonSerializer.Deserialize<StructuredNote>(jsonResponse, jsonOptions);
     }
 }
