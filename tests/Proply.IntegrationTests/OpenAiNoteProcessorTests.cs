@@ -29,6 +29,7 @@ public class OpenAiNoteProcessorTests : TestBase
             Assert.False(string.IsNullOrEmpty(endpoint), "AzureOpenAi:Endpoint is missing in configuration.");
             Assert.False(string.IsNullOrEmpty(deployment), "AzureOpenAi:DeploymentName is missing in configuration.");
 
+/*
             // Use AzureCliCredential to enforce usage of the logged-in CLI user
             var credential = new AzureCliCredential();
             
@@ -37,7 +38,14 @@ public class OpenAiNoteProcessorTests : TestBase
             var tokenContext = new TokenRequestContext(new[] { "https://cognitiveservices.azure.com/.default" });
             var token = await credential.GetTokenAsync(tokenContext);
             _output.WriteLine($"Token acquired successfully. Expires: {token.ExpiresOn}");
+*/
 
+            var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+            {
+                ExcludeVisualStudioCredential = true,      // Ignores the 'sergiy' account in VS 2022
+                ExcludeVisualStudioCodeCredential = true   // Good practice if you use multiple VS Code profiles
+            });
+            
             var azureClient = new Azure.AI.OpenAI.AzureOpenAIClient(new Uri(endpoint), credential);
             ChatClient chatClient = azureClient.GetChatClient(deployment);
 
