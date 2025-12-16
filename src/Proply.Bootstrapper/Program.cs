@@ -2,21 +2,28 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Configure Swagger/OpenAPI
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 /*
 // 1. Enable logging to Console
 var listener = Azure.Core.Diagnostics.AzureEventSourceListener.CreateConsoleLogger(System.Diagnostics.Tracing.EventLevel.LogAlways);
-
-// 2. Initialize the credential (this will now output logs)
-var credential = new DefaultAzureCredential();
 */
+
+// Initialize the credential with options matching integration tests
+var credential = new Azure.Identity.DefaultAzureCredential(new Azure.Identity.DefaultAzureCredentialOptions
+{
+    ExcludeVisualStudioCredential = true,
+    ExcludeVisualStudioCodeCredential = true
+});
+
 var keyVaultUri = builder.Configuration["KeyVaultUri"];
 if (!string.IsNullOrEmpty(keyVaultUri))
 {
-    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new Azure.Identity.DefaultAzureCredential());
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), credential);
 }
 
 // Register Cosmos Client
@@ -30,9 +37,8 @@ builder.Services.AddSingleton<Microsoft.Azure.Cosmos.CosmosClient>(sp =>
         return null; 
     }
     
-    // Use DefaultAzureCredential which is already added for KeyVault.
-    // CosmosClient supports TokenCredential.
-    return new Microsoft.Azure.Cosmos.CosmosClient(endpoint, new Azure.Identity.DefaultAzureCredential());
+    // Use the shared credential
+    return new Microsoft.Azure.Cosmos.CosmosClient(endpoint, credential);
 });
 
 // Configure Azure OpenAI
@@ -48,7 +54,7 @@ builder.Services.AddSingleton<OpenAI.Chat.ChatClient>(sp =>
     }
 
     // AzureOpenAIClient requires Azure.AI.OpenAI package
-    var client = new Azure.AI.OpenAI.AzureOpenAIClient(new Uri(endpoint), new Azure.Identity.DefaultAzureCredential());
+    var client = new Azure.AI.OpenAI.AzureOpenAIClient(new Uri(endpoint), credential);
     return client.GetChatClient(deployment);
 });
 
@@ -59,7 +65,10 @@ builder.Services.AddScoped<Proply.Modules.Notes.Services.INoteProcessor, Proply.
 builder.Services.AddScoped<Proply.Shared.Kernel.Data.IRepository<Proply.Modules.Notes.Domain.VoiceNote>>(sp =>
 {
     var client = sp.GetRequiredService<Microsoft.Azure.Cosmos.CosmosClient>();
-    return new Proply.Shared.Kernel.Data.CosmosRepository<Proply.Modules.Notes.Domain.VoiceNote>(client, "ProplyDb", "Notes");
+    var cosmosSection = builder.Configuration.GetSection("CosmosDb");
+    var databaseName = cosmosSection["DatabaseName"];
+    var containerName = cosmosSection["ContainerName"];
+    return new Proply.Shared.Kernel.Data.CosmosRepository<Proply.Modules.Notes.Domain.VoiceNote>(client, databaseName, containerName);
 });
 
 var app = builder.Build();
@@ -67,7 +76,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapControllers(); // Enable controllers
 }
 
