@@ -34,7 +34,7 @@ builder.Services.AddSingleton<Microsoft.Azure.Cosmos.CosmosClient>(sp =>
     if (string.IsNullOrEmpty(endpoint))
     {
         // Fallback or throw? For now let's minimal handling
-        return null; 
+        throw new InvalidOperationException("CosmosDb:AccountEndpoint must be configured."); 
     }
     
     // Use the shared credential
@@ -50,7 +50,7 @@ builder.Services.AddSingleton<OpenAI.Chat.ChatClient>(sp =>
 
     if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(deployment))
     {
-        return null;
+        throw new InvalidOperationException("AzureOpenAi:Endpoint and DeploymentName must be configured.");
     }
 
     // AzureOpenAIClient requires Azure.AI.OpenAI package
@@ -66,8 +66,8 @@ builder.Services.AddScoped<Proply.Shared.Kernel.Data.IRepository<Proply.Modules.
 {
     var client = sp.GetRequiredService<Microsoft.Azure.Cosmos.CosmosClient>();
     var cosmosSection = builder.Configuration.GetSection("CosmosDb");
-    var databaseName = cosmosSection["DatabaseName"];
-    var containerName = cosmosSection["ContainerName"];
+    var databaseName = cosmosSection["DatabaseName"] ?? throw new InvalidOperationException("CosmosDb:DatabaseName is missing");
+    var containerName = cosmosSection["ContainerName"] ?? throw new InvalidOperationException("CosmosDb:ContainerName is missing");
     return new Proply.Shared.Kernel.Data.CosmosRepository<Proply.Modules.Notes.Domain.VoiceNote>(client, databaseName, containerName);
 });
 

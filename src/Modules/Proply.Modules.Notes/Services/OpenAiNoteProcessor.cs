@@ -15,7 +15,7 @@ public class OpenAiNoteProcessor : INoteProcessor
         _chatClient = chatClient;
     }
 
-    public async Task<StructuredNote> ProcessNoteAsync(string rawContent)
+    public async Task<StructuredNote?> ProcessNoteAsync(string rawContent)
     {
         // Define the JSON schema for StructuredNote
         var jsonSchema = BinaryData.FromObjectAsJson(new

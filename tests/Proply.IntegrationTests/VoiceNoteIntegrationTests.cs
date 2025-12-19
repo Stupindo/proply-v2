@@ -17,15 +17,18 @@ public class VoiceNoteIntegrationTests : TestBase
     {
         _output = output;
 
-        var endpoint = Configuration["CosmosDb:AccountEndpoint"];
+        var endpoint = Configuration["CosmosDb:AccountEndpoint"] ?? throw new InvalidOperationException("CosmosDb:AccountEndpoint is missing");
         var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
         {
             ExcludeVisualStudioCredential = true,
             ExcludeVisualStudioCodeCredential = true
         });
 
+        var databaseName = Configuration["CosmosDb:DatabaseName"] ?? throw new InvalidOperationException("CosmosDb:DatabaseName is missing");
+        var containerName = Configuration["CosmosDb:ContainerName"] ?? throw new InvalidOperationException("CosmosDb:ContainerName is missing");
+
         _cosmosClient = new CosmosClient(endpoint, credential);
-        _repository = new CosmosRepository<VoiceNote>(_cosmosClient, Configuration["CosmosDb:DatabaseName"], Configuration["CosmosDb:ContainerName"]);
+        _repository = new CosmosRepository<VoiceNote>(_cosmosClient, databaseName, containerName);
     }
 
     [Fact]
@@ -58,7 +61,7 @@ public class VoiceNoteIntegrationTests : TestBase
             Assert.NotNull(retrievedNote);
             Assert.Equal(note.Id, retrievedNote.Id);
             Assert.Equal(note.RawContent, retrievedNote.RawContent);
-            Assert.Equal(note.StructuredNote.Summary, retrievedNote.StructuredNote.Summary);
+            Assert.Equal(note.StructuredNote?.Summary, retrievedNote.StructuredNote?.Summary);
         }
         finally
         {

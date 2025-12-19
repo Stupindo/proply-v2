@@ -22,7 +22,7 @@ public class CosmosRepository<T> : IRepository<T> where T : BaseEntity
     }
 
     /// <inheritdoc />
-    public async Task<T> GetByIdAsync(string id)
+    public async Task<T?> GetByIdAsync(string id)
     {
         try
         {

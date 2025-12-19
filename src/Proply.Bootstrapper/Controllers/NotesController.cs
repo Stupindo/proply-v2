@@ -56,5 +56,5 @@ public class NotesController : ControllerBase
 
 public class CreateNoteRequest
 {
-    public string Content { get; set; }
+    public string Content { get; set; } = string.Empty;
 }

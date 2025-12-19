@@ -11,7 +11,7 @@ public interface IRepository<T> where T : BaseEntity
     /// </summary>
     /// <param name="id">The unique ID of the entity.</param>
     /// <returns>The entity if found; otherwise, null.</returns>
-    Task<T> GetByIdAsync(string id);
+    Task<T?> GetByIdAsync(string id);
 
     /// <summary>
     /// Adds a new entity to the repository.
